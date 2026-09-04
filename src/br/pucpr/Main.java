@@ -10,6 +10,7 @@ import br.pucpr.planet.PlanetaColumns;
 import br.pucpr.table.Table;
 import br.pucpr.table.TableBuilder;
 import br.pucpr.table.model.ColumnTableData;
+import br.pucpr.table.model.PagedTableData;
 import br.pucpr.user.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -66,5 +67,18 @@ public class Main {
                         "Distance (au)",
                         p -> "%,11.2f".formatted(Planet.kmToAu(p.sunDistanceKm()))))
         .print();
+
+    System.out.println("PLANETAS PAGINADOS (3 por página)");
+    System.out.println("-------------------");
+
+    final var planetasPaginados =
+        new PagedTableData(new ColumnTableData<>(planetas, PlanetaColumns.values()), 3);
+    final var tabelaPaginada = new Table(planetasPaginados, LIGHT);
+    final var totalPaginas = planetasPaginados.pageCount();
+    for (int i = 0; i < totalPaginas; i++) {
+      planetasPaginados.setPage(i);
+      System.out.printf("Página %d de %d%n", i + 1, totalPaginas);
+      tabelaPaginada.print();
+    }
   }
 }
