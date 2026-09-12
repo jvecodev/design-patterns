@@ -10,6 +10,7 @@ import br.pucpr.planet.PlanetaColumns;
 import br.pucpr.table.Table;
 import br.pucpr.table.TableBuilder;
 import br.pucpr.table.model.ColumnTableData;
+import br.pucpr.table.model.ObservableTableData;
 import br.pucpr.table.model.PagedTableData;
 import br.pucpr.user.*;
 import java.lang.reflect.InvocationTargetException;
@@ -18,24 +19,24 @@ import java.util.ArrayList;
 public class Main {
   public static void main(String[] args)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    final var usuarios = new ArrayList<User>();
-    usuarios.add(
-        new User(101L, "Carlos Eduardo de Souza", "carlos.souza@email.com", "12345678901"));
-    usuarios.add(new User(102L, "Ana Maria Silva", "ana.silva@email.com", "98765432100"));
-    usuarios.add(
-        new User(103L, "João Pedro de Alcântara Bragança", "joao.pedro@email.com", "45678912345"));
-    usuarios.add(new User(104L, "Mariana Costa", "marianacosta.email.com", "11122233344"));
-    usuarios.add(new User(105L, "Lucas Mendes", "lucas@email.com", "12345"));
-    usuarios.add(new User(106L, "", "beatriz@email.com", "55566677788"));
-
-    System.out.println("IMPRIMINDO USUARIOS");
-    System.out.println("-------------------");
-    new Table(
-            new ColumnTableData<>(
-                usuarios, new IdColumn(), new CpfColumn(), new EmailColumn(), new NameColumn()),
-            LIGHT,
-            true)
-        .print();
+//    final var usuarios = new ArrayList<User>();
+//    usuarios.add(
+//        new User(101L, "Carlos Eduardo de Souza", "carlos.souza@email.com", "12345678901"));
+//    usuarios.add(new User(102L, "Ana Maria Silva", "ana.silva@email.com", "98765432100"));
+//    usuarios.add(
+//        new User(103L, "João Pedro de Alcântara Bragança", "joao.pedro@email.com", "45678912345"));
+//    usuarios.add(new User(104L, "Mariana Costa", "marianacosta.email.com", "11122233344"));
+//    usuarios.add(new User(105L, "Lucas Mendes", "lucas@email.com", "12345"));
+//    usuarios.add(new User(106L, "", "beatriz@email.com", "55566677788"));
+//
+//    System.out.println("IMPRIMINDO USUARIOS");
+//    System.out.println("-------------------");
+//    new Table(
+//            new ColumnTableData<>(
+//                usuarios, new IdColumn(), new CpfColumn(), new EmailColumn(), new NameColumn()),
+//            LIGHT,
+//            true)
+//        .print();
 
     final var planetas = new ArrayList<Planet>();
     planetas.add(new Planet("Mercúrio", 4879, 57_910_000L, ROCK));
@@ -48,37 +49,54 @@ public class Main {
     planetas.add(new Planet("Netuno", 49528, 4_504_300_000L, ICE));
     planetas.add(new Planet("Plutão", 2376, 5_906_380_000L, DWARF));
 
-    System.out.println();
-    System.out.println("IMPRIMINDO PLANETAS");
+//    System.out.println();
+//    System.out.println("IMPRIMINDO PLANETAS");
+//    System.out.println("-------------------");
+//    new Table(new ColumnTableData<>(planetas, PlanetaColumns.values())).print();
+//
+//    System.out.println("PLANETAS REFLETIDOS");
+//    System.out.println("-------------------");
+//
+//    new TableBuilder()
+//        .light()
+//        .rightAligned()
+//        .withData(
+//            planetas,
+//            c ->
+//                c.add(PlanetaColumns.values())
+//                    .add(
+//                        "Distance (au)",
+//                        p -> "%,11.2f".formatted(Planet.kmToAu(p.sunDistanceKm()))))
+//        .print();
+//
+//    System.out.println("PLANETAS PAGINADOS (3 por página)");
+//    System.out.println("-------------------");
+//
+//    final var planetasPaginados =
+//        new PagedTableData(new ColumnTableData<>(planetas, PlanetaColumns.values()), 3);
+//    final var tabelaPaginada = new Table(planetasPaginados, LIGHT);
+//    final var totalPaginas = planetasPaginados.pageCount();
+//    for (int i = 0; i < totalPaginas; i++) {
+//      planetasPaginados.setPage(i);
+//      System.out.printf("Página %d de %d%n", i + 1, totalPaginas);
+//      tabelaPaginada.print();
+//    }
+
+    System.out.println("PLANETAS OBSERVADOS (componentes avisados a cada mudança)");
     System.out.println("-------------------");
-    new Table(new ColumnTableData<>(planetas, PlanetaColumns.values())).print();
 
-    System.out.println("PLANETAS REFLETIDOS");
-    System.out.println("-------------------");
-
-    new TableBuilder()
-        .light()
-        .rightAligned()
-        .withData(
-            planetas,
-            c ->
-                c.add(PlanetaColumns.values())
-                    .add(
-                        "Distance (au)",
-                        p -> "%,11.2f".formatted(Planet.kmToAu(p.sunDistanceKm()))))
-        .print();
-
-    System.out.println("PLANETAS PAGINADOS (3 por página)");
-    System.out.println("-------------------");
-
-    final var planetasPaginados =
+    final var planetasObservaveisPaginados =
         new PagedTableData(new ColumnTableData<>(planetas, PlanetaColumns.values()), 3);
-    final var tabelaPaginada = new Table(planetasPaginados, LIGHT);
-    final var totalPaginas = planetasPaginados.pageCount();
-    for (int i = 0; i < totalPaginas; i++) {
-      planetasPaginados.setPage(i);
-      System.out.printf("Página %d de %d%n", i + 1, totalPaginas);
-      tabelaPaginada.print();
+    final var planetasObservaveis = new ObservableTableData(planetasObservaveisPaginados);
+    final var tabelaObservavel = new Table(planetasObservaveis, LIGHT);
+
+    planetasObservaveis.addListener(data -> tabelaObservavel.print());
+    planetasObservaveis.addListener(
+        data -> System.out.printf("[LOG] Tabela atualizada: %d linha(s) visíveis.%n", data.rowCount()));
+
+    for (int i = 0; i < planetasObservaveisPaginados.pageCount(); i++) {
+      planetasObservaveisPaginados.setPage(i);
+      planetasObservaveis.notifyChanged();
     }
   }
 }
